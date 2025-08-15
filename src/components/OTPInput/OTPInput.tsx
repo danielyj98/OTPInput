@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   Keyboard,
+  Platform,
 } from "react-native";
 
 const OTP_LENGTH = 6;
@@ -165,13 +166,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f9f9",
   },
   activeBox: {
-    borderColor: "#007AFF",
-    backgroundColor: "#e6f0ff",
+    borderColor: Platform.select({ ios: "#007AFF", android: "#28a745" }),
+    backgroundColor: Platform.select({ ios: "#e6f0ff", android: "#e6ffe6" }),
+    ...Platform.select({
+      ios: {
+        shadowColor: "#007AFF",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
   loadingContainer: {
     marginTop: 20,
     alignItems: "center",
-    height: 60, // reserve space to prevent layout shift
+    height: 60,
   },
   loadingText: {
     marginTop: 8,
