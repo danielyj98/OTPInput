@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  ActivityIndicator,
-  Alert,
-  Keyboard,
-  Platform,
-} from "react-native";
+import { View, Text, TextInput, ActivityIndicator, Alert, Keyboard } from "react-native";
+
+import styles from "./OTPInput.styles";
 
 const OTP_LENGTH = 6;
 
@@ -16,8 +9,6 @@ const OTPComponent = () => {
   const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(""));
   const [isLoading, setIsLoading] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(0);
-
-  // Create TypeScript-safe refs
   const inputRefs = Array.from({ length: OTP_LENGTH }, () => React.createRef<TextInput>());
 
   // Mock verification function
@@ -39,7 +30,7 @@ const OTPComponent = () => {
     try {
       const isValid = await verifyOTP(otpCode);
       if (isValid) {
-        Alert.alert("Success", "OTP verified successfully!");
+        Alert.alert("Success", "Neon to the moon! 🚀");
         resetOtp();
       } else {
         Alert.alert("Error", "Invalid OTP. Try again.");
@@ -53,12 +44,12 @@ const OTPComponent = () => {
     }
   };
 
-  // Handle backspace
   const handleKeyPress = (e: any, index: number) => {
     const key = e.nativeEvent.key;
     const newOtp = [...otp];
 
-    if (/\d/.test(key)) {
+    // Regex expression that only allows single digits in the form of strings
+    if (/^\d$/.test(key)) {
       // Insert or overwrite digit
       newOtp[index] = key;
       setOtp(newOtp);
@@ -85,6 +76,7 @@ const OTPComponent = () => {
       }
     }
   };
+
   // Auto-focus first input on mount
   useEffect(() => {
     inputRefs[0].current?.focus();
@@ -94,14 +86,13 @@ const OTPComponent = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Enter OTP</Text>
       <Text style={styles.subtitle}>Hint: Try 123456 🤫</Text>
-
       <View style={styles.otpContainer}>
         {otp.map((digit, index) => (
           <TextInput
             key={index}
             ref={inputRefs[index]}
             style={[styles.input, index === focusedIndex && styles.activeBox]}
-            value={otp[index]} // controlled value always from state
+            value={otp[index]}
             onChangeText={(text) => {
               const newOtp = [...otp];
               newOtp[index] = text;
@@ -131,63 +122,3 @@ const OTPComponent = () => {
 };
 
 export default OTPComponent;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-    backgroundColor: "#fff",
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "600",
-    marginBottom: 5,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#666",
-    marginBottom: 20,
-  },
-  otpContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 10,
-  },
-  input: {
-    width: 50,
-    height: 50,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    fontSize: 20,
-    fontWeight: "500",
-    backgroundColor: "#f9f9f9",
-  },
-  activeBox: {
-    borderColor: Platform.select({ ios: "#007AFF", android: "#28a745" }),
-    backgroundColor: Platform.select({ ios: "#e6f0ff", android: "#e6ffe6" }),
-    ...Platform.select({
-      ios: {
-        shadowColor: "#007AFF",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-  loadingContainer: {
-    marginTop: 20,
-    alignItems: "center",
-    height: 60,
-  },
-  loadingText: {
-    marginTop: 8,
-    fontSize: 16,
-    color: "#555",
-  },
-});
