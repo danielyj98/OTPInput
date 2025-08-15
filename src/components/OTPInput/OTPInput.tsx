@@ -25,33 +25,10 @@ const OTPComponent = () => {
     return otpCode === "123456";
   };
 
-  // Handle backspace
-  const handleKeyPress = (e: any, index: number) => {
-    const key = e.nativeEvent.key;
-
-    if (/\d/.test(key)) {
-      const newOtp = [...otp];
-      const wasEmpty = newOtp[index] === ""; // check if the box was empty
-      newOtp[index] = key; // overwrite
-      setOtp(newOtp);
-
-      // Only auto-advance if the box was empty
-      if (wasEmpty && index < OTP_LENGTH - 1) {
-        inputRefs[index + 1].current?.focus();
-      } else if (index === OTP_LENGTH - 1) {
-        handleSubmit(newOtp.join(""));
-      }
-    } else if (key === "Backspace") {
-      const newOtp = [...otp];
-      if (otp[index] !== "") {
-        newOtp[index] = ""; // clear current
-        setOtp(newOtp);
-      } else if (index > 0) {
-        newOtp[index - 1] = "";
-        setOtp(newOtp);
-        inputRefs[index - 1].current?.focus();
-      }
-    }
+  const resetOtp = () => {
+    setOtp(Array(OTP_LENGTH).fill(""));
+    setFocusedIndex(0);
+    inputRefs[0].current?.focus();
   };
 
   const handleSubmit = async (otpCode: string) => {
@@ -75,12 +52,38 @@ const OTPComponent = () => {
     }
   };
 
-  const resetOtp = () => {
-    setOtp(Array(OTP_LENGTH).fill(""));
-    setFocusedIndex(0);
-    inputRefs[0].current?.focus();
-  };
+  // Handle backspace
+  const handleKeyPress = (e: any, index: number) => {
+    const key = e.nativeEvent.key;
+    const newOtp = [...otp];
 
+    if (/\d/.test(key)) {
+      // Insert or overwrite digit
+      newOtp[index] = key;
+      setOtp(newOtp);
+
+      // Auto-advance
+      if (index < OTP_LENGTH - 1) {
+        inputRefs[index + 1].current?.focus();
+      }
+
+      // Auto-submit if all boxes are filled
+      if (newOtp.every((c) => c !== "")) {
+        handleSubmit(newOtp.join(""));
+      }
+    } else if (key === "Backspace") {
+      if (newOtp[index] !== "") {
+        // Clear current box
+        newOtp[index] = "";
+        setOtp(newOtp);
+      } else if (index > 0) {
+        // Move back and clear previous box
+        newOtp[index - 1] = "";
+        setOtp(newOtp);
+        inputRefs[index - 1].current?.focus();
+      }
+    }
+  };
   // Auto-focus first input on mount
   useEffect(() => {
     inputRefs[0].current?.focus();
