@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, ActivityIndicator, Alert, Keyboard } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  ActivityIndicator,
+  Alert,
+  Keyboard,
+  AppState,
+  Pressable,
+} from "react-native";
+import * as Clipboard from "expo-clipboard";
 
 import styles from "./OTPInput.styles";
 
@@ -9,6 +19,8 @@ const OTPComponent = () => {
   const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(""));
   const [isLoading, setIsLoading] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(0);
+  const [clipboard, setClipBoard] = useState("");
+  const [isValidClipboard, setIsValidClipboard] = useState(false);
   const inputRefs = Array.from({ length: OTP_LENGTH }, () => React.createRef<TextInput>());
 
   // Mock verification function
@@ -77,15 +89,44 @@ const OTPComponent = () => {
     }
   };
 
+  const getClipboard = async () => {
+    const text = await Clipboard.getStringAsync();
+    setIsValidClipboard(/^\d{6}$/.test(clipboard));
+    setClipBoard(text);
+  };
+
   // Auto-focus first input on mount
   useEffect(() => {
     inputRefs[0].current?.focus();
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active") {
+        getClipboard();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
+
+  useEffect(() => {
+    setIsValidClipboard(/^\d{6}$/.test(clipboard));
+  }, [clipboard]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Enter OTP</Text>
       <Text style={styles.subtitle}>Hint: Try 123456 🤫</Text>
+      {isValidClipboard ? (
+        <Pressable
+          onPress={() => {
+            setOtp(clipboard.split("")); // This is just for visuals so the user understands what's happening- the <clipboard> is already perfect for submission.
+            handleSubmit(clipboard);
+          }}
+        >
+          <Text>Paste</Text>
+        </Pressable>
+      ) : null}
       <View style={styles.otpContainer}>
         {otp.map((digit, index) => (
           <TextInput
@@ -96,6 +137,7 @@ const OTPComponent = () => {
             onChangeText={(text) => {
               const newOtp = [...otp];
               newOtp[index] = text;
+              console.log(text);
               setOtp(newOtp);
             }}
             onKeyPress={(e) => handleKeyPress(e, index)}
