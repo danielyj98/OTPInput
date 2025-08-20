@@ -8,6 +8,7 @@ import {
   Keyboard,
   AppState,
   Pressable,
+  Platform,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 
@@ -91,11 +92,24 @@ const OTPComponent = () => {
 
   const getClipboard = async () => {
     const text = await Clipboard.getStringAsync();
-    setIsValidClipboard(/^\d{6}$/.test(clipboard));
     setClipBoard(text);
   };
 
-  // Auto-focus first input on mount
+  const submitClipboard = () => {
+    setOtp(clipboard.split("")); // This is just for visuals so the user understands what's happening- the <clipboard> is already perfect for submission.
+    handleSubmit(clipboard);
+  };
+
+  // iOS has an auto-paste feature that will negate the paste button barring any issues with auto-paste appearing
+  const iosPaste = () => {
+    if (clipboard.length) {
+      if (/^\d{6}$/.test(clipboard)) submitClipboard();
+      else Alert.alert("Could not paste clipboard", "Please paste a 6-digit code");
+    }
+    Clipboard.setStringAsync("");
+  };
+
+  // Auto-focus first input and listen for clipboard changes when user re-enters app
   useEffect(() => {
     inputRefs[0].current?.focus();
     const subscription = AppState.addEventListener("change", (nextState) => {
@@ -110,23 +124,19 @@ const OTPComponent = () => {
   }, []);
 
   useEffect(() => {
-    setIsValidClipboard(/^\d{6}$/.test(clipboard));
+    if (Platform.OS === "ios") {
+      iosPaste();
+    }
+    if (Platform.OS === "android") {
+      setIsValidClipboard(/^\d{6}$/.test(clipboard));
+    }
   }, [clipboard]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Enter OTP</Text>
       <Text style={styles.subtitle}>Hint: Try 123456 🤫</Text>
-      {isValidClipboard ? (
-        <Pressable
-          onPress={() => {
-            setOtp(clipboard.split("")); // This is just for visuals so the user understands what's happening- the <clipboard> is already perfect for submission.
-            handleSubmit(clipboard);
-          }}
-        >
-          <Text>Paste</Text>
-        </Pressable>
-      ) : null}
+
       <View style={styles.otpContainer}>
         {otp.map((digit, index) => (
           <TextInput
@@ -137,7 +147,6 @@ const OTPComponent = () => {
             onChangeText={(text) => {
               const newOtp = [...otp];
               newOtp[index] = text;
-              console.log(text);
               setOtp(newOtp);
             }}
             onKeyPress={(e) => handleKeyPress(e, index)}
@@ -147,8 +156,32 @@ const OTPComponent = () => {
             caretHidden={true}
             editable={!isLoading}
             onFocus={() => setFocusedIndex(index)}
+            contextMenuHidden={true}
+            textContentType="oneTimeCode"
           />
         ))}
+      </View>
+      <View style={styles.pasteButtonContainer}>
+        {isValidClipboard ? (
+          <Pressable
+            onPress={() => {
+              setOtp(clipboard.split("")); // This is just for visuals so the user understands what's happening- the <clipboard> is already perfect for submission
+              handleSubmit(clipboard);
+              Clipboard.setStringAsync("");
+            }}
+            disabled={!clipboard.length}
+          >
+            <Text
+              style={{
+                color: !clipboard.length
+                  ? "#EBEBE4"
+                  : Platform.select({ ios: "#007AFF", android: "#28a745" }),
+              }}
+            >
+              Paste from clipboard
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
 
       <View style={styles.loadingContainer}>

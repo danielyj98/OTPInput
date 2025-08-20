@@ -18,6 +18,11 @@ export default StyleSheet.create({
     color: "#666",
     marginBottom: 20,
   },
+  pasteButtonContainer: {
+    fontSize: 16,
+    marginTop: 20,
+    height: 20
+  },
   otpContainer: {
     flexDirection: "row",
     justifyContent: "center",
