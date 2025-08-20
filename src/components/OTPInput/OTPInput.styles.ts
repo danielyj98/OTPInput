@@ -26,6 +26,7 @@ export default StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     gap: 10,
+    position: "relative",
   },
   input: {
     width: 50,

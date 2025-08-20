@@ -1,20 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
   TextInput,
-  ActivityIndicator,
   Alert,
   Keyboard,
   AppState,
   Pressable,
   Platform,
+  Animated,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { PlayfairDisplay_400Regular } from "@expo-google-fonts/playfair-display/400Regular";
+import LoadingAnimation from "./LoadingAnimation";
+import ConfettiCannon from "react-native-confetti-cannon";
 
+import { jiggleInput } from "./animationHelpers";
 import styles from "./OTPInput.styles";
 
 const OTP_LENGTH = 6;
@@ -25,11 +28,15 @@ const OTPComponent = () => {
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [clipboard, setClipBoard] = useState("");
   const [isValidClipboard, setIsValidClipboard] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const [fontsLoaded, error] = useFonts({
     Playfair: PlayfairDisplay_400Regular,
   });
 
   const inputRefs = Array.from({ length: OTP_LENGTH }, () => React.createRef<TextInput>());
+  const inputScales = useRef(
+    Array.from({ length: OTP_LENGTH }, () => new Animated.Value(1))
+  ).current;
 
   // Mock verification function
   const verifyOTP = async (otpCode: string) => {
@@ -51,6 +58,8 @@ const OTPComponent = () => {
       const isValid = await verifyOTP(otpCode);
       if (isValid) {
         Alert.alert("Success", "Neon to the moon! 🚀");
+        setShowConfetti(true); // trigger confetti
+        setTimeout(() => setShowConfetti(false), 3000); // auto-remove after 3s
         resetOtp();
       } else {
         Alert.alert("Error", "Invalid OTP. Try again.");
@@ -153,32 +162,38 @@ const OTPComponent = () => {
     <View style={styles.container}>
       <Text style={[styles.title, { fontFamily: "Playfair" }]}>Enter OTP</Text>
       <Text style={[styles.subtitle, { fontFamily: "Playfair" }]}>Hint: Try 123456 🤫</Text>
-      <View style={styles.otpContainer}>
+      <View style={[styles.otpContainer]}>
         {otp.map((digit, index) => (
-          <TextInput
-            key={index}
-            ref={inputRefs[index]}
-            style={[
-              styles.input,
-              { fontFamily: "Playfair" },
-              index === focusedIndex && styles.activeBox,
-            ]}
-            value={otp[index]}
-            onChangeText={(text) => {
-              const newOtp = [...otp];
-              newOtp[index] = text;
-              setOtp(newOtp);
-            }}
-            onKeyPress={(e) => handleKeyPress(e, index)}
-            keyboardType="number-pad"
-            maxLength={1}
-            textAlign="center"
-            caretHidden={true}
-            editable={!isLoading}
-            onFocus={() => setFocusedIndex(index)}
-            contextMenuHidden={true}
-            textContentType="oneTimeCode"
-          />
+          <Animated.View style={{ transform: [{ scale: inputScales[index] }] }} key={index}>
+            <TextInput
+              ref={inputRefs[index]}
+              style={[
+                styles.input,
+                { fontFamily: "Playfair" },
+                index === focusedIndex && styles.activeBox,
+              ]}
+              value={otp[index]}
+              onChangeText={(text) => {
+                const newOtp = [...otp];
+                newOtp[index] = text;
+                setOtp(newOtp);
+              }}
+              onKeyPress={(e) => {
+                handleKeyPress(e, index);
+                jiggleInput(inputScales[index]);
+              }}
+              keyboardType="number-pad"
+              maxLength={1}
+              textAlign="center"
+              caretHidden={true}
+              editable={!isLoading}
+              onFocus={() => {
+                setFocusedIndex(index);
+              }}
+              contextMenuHidden={true}
+              textContentType="oneTimeCode"
+            />
+          </Animated.View>
         ))}
       </View>
       <View style={styles.pasteButtonContainer}>
@@ -204,14 +219,10 @@ const OTPComponent = () => {
         ) : null}
       </View>
 
-      <View style={styles.loadingContainer}>
-        {isLoading && (
-          <>
-            <ActivityIndicator size="large" color="#007AFF" />
-            <Text style={[styles.loadingText, { fontFamily: "Playfair" }]}>Verifying...</Text>
-          </>
-        )}
-      </View>
+      <View style={styles.loadingContainer}>{isLoading && <LoadingAnimation />}</View>
+      {showConfetti && (
+        <ConfettiCannon count={50} origin={{ x: 0, y: 0 }} fadeOut={true} fallSpeed={3000} />
+      )}
     </View>
   );
 };
