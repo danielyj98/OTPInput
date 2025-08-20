@@ -11,6 +11,9 @@ import {
   Platform,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
+import { PlayfairDisplay_400Regular } from "@expo-google-fonts/playfair-display/400Regular";
 
 import styles from "./OTPInput.styles";
 
@@ -22,6 +25,10 @@ const OTPComponent = () => {
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [clipboard, setClipBoard] = useState("");
   const [isValidClipboard, setIsValidClipboard] = useState(false);
+  const [fontsLoaded, error] = useFonts({
+    Playfair: PlayfairDisplay_400Regular,
+  });
+
   const inputRefs = Array.from({ length: OTP_LENGTH }, () => React.createRef<TextInput>());
 
   // Mock verification function
@@ -132,17 +139,30 @@ const OTPComponent = () => {
     }
   }, [clipboard]);
 
+  useEffect(() => {
+    if (fontsLoaded || error) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, error]);
+
+  if (!fontsLoaded && !error) {
+    return null;
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Enter OTP</Text>
-      <Text style={styles.subtitle}>Hint: Try 123456 🤫</Text>
-
+      <Text style={[styles.title, { fontFamily: "Playfair" }]}>Enter OTP</Text>
+      <Text style={[styles.subtitle, { fontFamily: "Playfair" }]}>Hint: Try 123456 🤫</Text>
       <View style={styles.otpContainer}>
         {otp.map((digit, index) => (
           <TextInput
             key={index}
             ref={inputRefs[index]}
-            style={[styles.input, index === focusedIndex && styles.activeBox]}
+            style={[
+              styles.input,
+              { fontFamily: "Playfair" },
+              index === focusedIndex && styles.activeBox,
+            ]}
             value={otp[index]}
             onChangeText={(text) => {
               const newOtp = [...otp];
@@ -188,7 +208,7 @@ const OTPComponent = () => {
         {isLoading && (
           <>
             <ActivityIndicator size="large" color="#007AFF" />
-            <Text style={styles.loadingText}>Verifying...</Text>
+            <Text style={[styles.loadingText, { fontFamily: "Playfair" }]}>Verifying...</Text>
           </>
         )}
       </View>

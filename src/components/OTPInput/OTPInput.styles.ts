@@ -9,8 +9,7 @@ export default StyleSheet.create({
     backgroundColor: "#fff",
   },
   title: {
-    fontSize: 22,
-    fontWeight: "600",
+    fontSize: 32,
     marginBottom: 5,
   },
   subtitle: {
@@ -21,7 +20,7 @@ export default StyleSheet.create({
   pasteButtonContainer: {
     fontSize: 16,
     marginTop: 20,
-    height: 20
+    height: 20,
   },
   otpContainer: {
     flexDirection: "row",
@@ -34,7 +33,7 @@ export default StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
-    fontSize: 20,
+    fontSize: 28,
     fontWeight: "500",
     backgroundColor: "#f9f9f9",
   },
