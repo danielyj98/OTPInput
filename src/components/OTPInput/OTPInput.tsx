@@ -16,6 +16,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { PlayfairDisplay_400Regular } from "@expo-google-fonts/playfair-display/400Regular";
 import LoadingAnimation from "./LoadingAnimation";
 import ConfettiCannon from "react-native-confetti-cannon";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { jiggleInput } from "./animationHelpers";
 import styles from "./OTPInput.styles";
@@ -159,71 +160,72 @@ const OTPComponent = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={[styles.title, { fontFamily: "Playfair" }]}>Enter OTP</Text>
-      <Text style={[styles.subtitle, { fontFamily: "Playfair" }]}>Hint: Try 123456 🤫</Text>
-      <View style={[styles.otpContainer]}>
-        {otp.map((digit, index) => (
-          <Animated.View style={{ transform: [{ scale: inputScales[index] }] }} key={index}>
-            <TextInput
-              ref={inputRefs[index]}
-              style={[
-                styles.input,
-                { fontFamily: "Playfair" },
-                index === focusedIndex && styles.activeBox,
-              ]}
-              value={otp[index]}
-              onChangeText={(text) => {
-                const newOtp = [...otp];
-                newOtp[index] = text;
-                setOtp(newOtp);
+    <LinearGradient
+      colors={["#FFF7F3", "#FFEBE8", "#FF6B6B"]}
+      start={[0, 0]}
+      end={[1, 1]}
+      style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+    >
+      <View style={styles.container}>
+        <Text style={[styles.title, { fontFamily: "Playfair" }]}>Enter OTP</Text>
+        <Text style={[styles.subtitle, { fontFamily: "Playfair" }]}>Hint: Try 123456 🤫</Text>
+        <View style={[styles.otpContainer]}>
+          {otp.map((digit, index) => (
+            <Animated.View style={{ transform: [{ scale: inputScales[index] }] }} key={index}>
+              <TextInput
+                ref={inputRefs[index]}
+                style={[
+                  styles.input,
+                  { fontFamily: "Playfair" },
+                  index === focusedIndex && styles.activeBox,
+                ]}
+                value={otp[index]}
+                onChangeText={(text) => {
+                  const newOtp = [...otp];
+                  newOtp[index] = text;
+                  setOtp(newOtp);
+                }}
+                onKeyPress={(e) => {
+                  handleKeyPress(e, index);
+                  jiggleInput(inputScales[index]);
+                }}
+                keyboardType="number-pad"
+                maxLength={1}
+                textAlign="center"
+                caretHidden={true}
+                editable={!isLoading}
+                onFocus={() => {
+                  setFocusedIndex(index);
+                }}
+                contextMenuHidden={true}
+                textContentType="oneTimeCode"
+              />
+            </Animated.View>
+          ))}
+        </View>
+        <View style={styles.pasteButtonContainer}>
+          {isValidClipboard ? (
+            <Pressable
+              onPress={() => {
+                setOtp(clipboard.split("")); // This is just for visuals so the user understands what's happening- the <clipboard> is already perfect for submission
+                handleSubmit(clipboard);
+                Clipboard.setStringAsync("");
               }}
-              onKeyPress={(e) => {
-                handleKeyPress(e, index);
-                jiggleInput(inputScales[index]);
-              }}
-              keyboardType="number-pad"
-              maxLength={1}
-              textAlign="center"
-              caretHidden={true}
-              editable={!isLoading}
-              onFocus={() => {
-                setFocusedIndex(index);
-              }}
-              contextMenuHidden={true}
-              textContentType="oneTimeCode"
-            />
-          </Animated.View>
-        ))}
-      </View>
-      <View style={styles.pasteButtonContainer}>
-        {isValidClipboard ? (
-          <Pressable
-            onPress={() => {
-              setOtp(clipboard.split("")); // This is just for visuals so the user understands what's happening- the <clipboard> is already perfect for submission
-              handleSubmit(clipboard);
-              Clipboard.setStringAsync("");
-            }}
-            disabled={!clipboard.length}
-          >
-            <Text
-              style={{
-                color: !clipboard.length
-                  ? "#EBEBE4"
-                  : Platform.select({ ios: "#007AFF", android: "#28a745" }),
-              }}
+              disabled={!clipboard.length}
             >
-              Paste from clipboard
-            </Text>
-          </Pressable>
-        ) : null}
-      </View>
+              <Text style={[styles.pasteText, { fontFamily: "Playfair" }]}>
+                Paste from clipboard!
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
 
-      <View style={styles.loadingContainer}>{isLoading && <LoadingAnimation />}</View>
-      {showConfetti && (
-        <ConfettiCannon count={50} origin={{ x: 0, y: 0 }} fadeOut={true} fallSpeed={3000} />
-      )}
-    </View>
+        <View style={styles.loadingContainer}>{isLoading && <LoadingAnimation />}</View>
+        {showConfetti && (
+          <ConfettiCannon count={50} origin={{ x: 0, y: 0 }} fadeOut={true} fallSpeed={3000} />
+        )}
+      </View>
+    </LinearGradient>
   );
 };
 

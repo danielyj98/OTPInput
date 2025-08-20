@@ -1,12 +1,10 @@
-import { StyleSheet, Platform } from "react-native";
+import { StyleSheet } from "react-native";
 
 export default StyleSheet.create({
   container: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#fff",
   },
   title: {
     fontSize: 32,
@@ -32,26 +30,22 @@ export default StyleSheet.create({
     width: 50,
     height: 50,
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
+    borderColor: "rgba(255, 255, 255, 0.5)", // soft subtle border
+    borderRadius: 12,
     fontSize: 28,
     fontWeight: "500",
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "rgba(255, 220, 210, 1)", // tinted to match gradient
+    color: "#6B4226", // readable text
+    textAlign: "center",
   },
   activeBox: {
-    borderColor: Platform.select({ ios: "#007AFF", android: "#28a745" }),
-    backgroundColor: Platform.select({ ios: "#e6f0ff", android: "#e6ffe6" }),
-    ...Platform.select({
-      ios: {
-        shadowColor: "#007AFF",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
+    borderColor: "rgba(255, 120, 90, 1)", // strong, warm contrast
+    backgroundColor: "rgba(255, 230, 220, 0.95)",
+    shadowColor: "rgba(255, 120, 90, 0.4)", // subtle aura
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6, // tighter, softer glow
+    shadowRadius: 6, // small radius for tight aura
+    elevation: 6,
   },
   loadingContainer: {
     marginTop: 20,
@@ -62,5 +56,9 @@ export default StyleSheet.create({
     marginTop: 8,
     fontSize: 16,
     color: "#555",
+  },
+  pasteText: {
+    color: "#666",
+    fontSize: 16,
   },
 });
