@@ -161,7 +161,7 @@ const OTPComponent = () => {
 
   return (
     <LinearGradient
-      colors={["#FFF7F3", "#FFEBE8", "#FF6B6B"]}
+      colors={["#ffffffff", "#ff9865ff"]}
       start={[0, 0]}
       end={[1, 1]}
       style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
